@@ -12,7 +12,7 @@ public class SFTPResumeUpload {
         String passwd = "xxx";
         String host = "192.168.50.33";
         String localFilePath = "/Users/evan/Downloads/1080p.mp4";
-        String remoteFilePath = "/tmp/evan/test10.mp4";
+        String remoteFilePath = "/tmp/evan/test11.mp4";
 
         try {
             // 设置JSch
@@ -24,7 +24,11 @@ public class SFTPResumeUpload {
             java.util.Properties config = new java.util.Properties();
             config.put("StrictHostKeyChecking", "no");
             session.setConfig(config);
-
+            session.setConfig("server_host_key", session.getConfig("server_host_key") + ",ssh-rsa");
+            session.setConfig("PubkeyAcceptedAlgorithms", session.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa,rsa-sha2-256");
+            session.setConfig("dhgex_min", "1024");
+            session.setConfig("dhgex_max", "2048");
+            session.setConfig("dhgex_preferred", "2048");
             // 连接到服务器
             session.connect();
 
@@ -34,13 +38,18 @@ public class SFTPResumeUpload {
             ChannelSftp sftpChannel = (ChannelSftp) channel;
             long remoteSize = 0;
 
-            // 检查远程文件是否存在
-            SftpATTRS attrs = sftpChannel.lstat(remoteFilePath);
-            if (!attrs.isReg()) {
-                throw new FileNotFoundException("Remote file does not exist: " + remoteFilePath);
+            // 检查本地文件是否存在
+            try {
+                SftpATTRS attrs = sftpChannel.lstat(remoteFilePath);
+                if (!attrs.isReg()) {
+                    throw new FileNotFoundException("Local file does not exist: " + remoteFilePath);
+                }
+                // 检查远程文件大小
+                remoteSize = attrs.getSize();
+            }catch(Exception ex){
+                ex.printStackTrace();
             }
-            // 检查远程文件大小
-            remoteSize = attrs.getSize();
+
 
             // 打开本地文件
             RandomAccessFile raf = new RandomAccessFile(localFilePath, "r");

@@ -28,6 +28,11 @@ public class SFTPResumeDownload {
             java.util.Properties config = new java.util.Properties();
             config.put("StrictHostKeyChecking", "no");
             session.setConfig(config);
+            session.setConfig("server_host_key", session.getConfig("server_host_key") + ",ssh-rsa");
+            session.setConfig("PubkeyAcceptedAlgorithms", session.getConfig("PubkeyAcceptedAlgorithms") + ",ssh-rsa,rsa-sha2-256");
+            session.setConfig("dhgex_min", "1024");
+            session.setConfig("dhgex_max", "2048");
+            session.setConfig("dhgex_preferred", "2048");
 
             // 连接到服务器
             session.connect();
